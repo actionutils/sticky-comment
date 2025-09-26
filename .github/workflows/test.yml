@@ -12,6 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Post sticky comment (first)
+        uses: ./
+        with:
+          key: 'test-pr-comment'
+          body: test comment (will be updated with next step)
+
       - name: Post sticky comment
         uses: ./
         with:
