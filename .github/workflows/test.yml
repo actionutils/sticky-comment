@@ -1,0 +1,39 @@
+name: Test Sticky Comment
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  test-comment:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Post sticky comment
+        uses: ./
+        with:
+          key: 'test-pr-comment'
+          body: |
+            ## 🧪 Test Comment
+
+            This is a test of the sticky comment action!
+
+            - PR Number: #${{ github.event.pull_request.number }}
+            - SHA: ${{ github.event.pull_request.head.sha }}
+            - Timestamp: ${{ github.event.pull_request.updated_at }}
+
+            This comment should update on each push, not create duplicates.
+
+      - name: Post another sticky comment with different key
+        uses: ./
+        with:
+          key: 'build-info'
+          body: |
+            ## 📦 Build Information
+
+            - Branch: ${{ github.head_ref }}
+            - Base: ${{ github.base_ref }}
+            - Actor: @${{ github.actor }}
+
+            Testing template escaping: {{ this should not be interpreted as a template }}
