@@ -33,12 +33,9 @@ runs:
         COMMENT_NUMBER: ${{ inputs.number }}
         ACTION_PATH: ${{ github.action_path }}
       run: |
-        # Set PR number to 0 if not provided (github-comment will auto-detect)
-        PR_NUMBER="${COMMENT_NUMBER:-0}"
-
         # Run github-comment
         "${ACTION_PATH}/run-github-comment.sh" -- post \
-          --pr "${PR_NUMBER}" \
+          --pr "${COMMENT_NUMBER:-0}" \
           -k "${COMMENT_KEY}" \
           --update-condition "Comment.HasMeta && Comment.Meta.TemplateKey == \"${COMMENT_KEY}\"" \
           --var "content:${COMMENT_BODY}" \
