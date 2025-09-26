@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/binary-install/binstaller/main/schema/InstallSpec.json
+schema: v1
+repo: suzuki-shunsuke/github-comment
+default_version: v6.3.5
+asset:
+  template: github-comment_${VERSION}_${OS}_${ARCH}${EXT}
+  default_extension: .tar.gz
+checksums:
+  algorithm: sha256
+  template: github-comment_${VERSION}_checksums.txt
+  embedded_checksums:
+    v6.3.5:
+    - filename: github-comment_6.3.5_darwin_amd64.tar.gz
+      hash: ae36c77af8b341ec8a6acac83ba68641dcc933b3571de6f213f7970993ca88fa
+    - filename: github-comment_6.3.5_darwin_arm64.tar.gz
+      hash: 41824cdccbeccebec0a0acb3388a8951e1d7300f6c912c392d347ed76a0f02d0
+    - filename: github-comment_6.3.5_linux_amd64.tar.gz
+      hash: 2e5090cd77be1c8aece9390030a9c12b157e08535f757223ad2317ff7382a411
+    - filename: github-comment_6.3.5_linux_arm64.tar.gz
+      hash: b74418dbd5da1d1fb257aa60d639c2011347b438909560910a8f52c4ae371aab
+    - filename: github-comment_6.3.5_windows_amd64.tar.gz
+      hash: 0dfebe1070116163a3e2cf8c8f3d52065653c9f439f3b38a75ec963ee15a650b
+    - filename: github-comment_6.3.5_windows_arm64.tar.gz
+      hash: 1122b7821be3b02e60ea26a6e542cef11cd287eb0b5cdb5a1bc214f6f84f0e79
