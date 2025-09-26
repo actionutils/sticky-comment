@@ -34,10 +34,18 @@ runs:
         ACTION_PATH: ${{ github.action_path }}
       run: |
         set -x  # Show executed commands for debugging
+
+        # Create temp file for comment body
+        TMPFILE=$(mktemp)
+        echo "${COMMENT_BODY}" > "${TMPFILE}"
+
         # Run github-comment
         "${ACTION_PATH}/run-github-comment.sh" -- post \
           --pr "${COMMENT_NUMBER:-0}" \
           -k "${COMMENT_KEY}" \
           --update-condition "Comment.HasMeta && Comment.Meta.TemplateKey == \"${COMMENT_KEY}\"" \
-          --var "content:${COMMENT_BODY}" \
+          --var-file "content:${TMPFILE}" \
           --template "{{ .Vars.content | AvoidHTMLEscape }}"
+
+        # Clean up temp file
+        rm -f "${TMPFILE}"
