@@ -1,0 +1,52 @@
+name: 'Sticky Comment'
+description: 'Post sticky comments to GitHub PRs and Issues using github-comment CLI'
+author: 'haya14busa'
+branding:
+  icon: 'message-square'
+  color: 'blue'
+
+inputs:
+  key:
+    description: 'Unique key for the sticky comment (used for updating)'
+    required: true
+  body:
+    description: 'Comment body content'
+    required: true
+  number:
+    description: 'PR or Issue number. If not provided, will be auto-detected from the context'
+    required: false
+    default: ''
+  token:
+    description: 'GitHub token'
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Post sticky comment
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+        COMMENT_KEY: ${{ inputs.key }}
+        COMMENT_BODY: ${{ inputs.body }}
+        COMMENT_NUMBER: ${{ inputs.number }}
+        ACTION_PATH: ${{ github.action_path }}
+      run: |
+        set -euo pipefail
+        set -x  # Show executed commands for debugging
+
+        # Create temp file for comment body
+        TMPFILE=$(mktemp)
+        echo "${COMMENT_BODY}" > "${TMPFILE}"
+
+        # Run github-comment (avoid spaces in args to prevent wrapper splitting)
+        "${ACTION_PATH}/run-github-comment.sh" -- post \
+          --pr "${COMMENT_NUMBER:-0}" \
+          -k "${COMMENT_KEY}" \
+          --update-condition "Comment.HasMeta&&Comment.Meta.TemplateKey==\"${COMMENT_KEY}\"" \
+          --var-file "content:${TMPFILE}" \
+          --template '{{.Vars.content|AvoidHTMLEscape}}'
+
+        # Clean up temp file
+        rm -f "${TMPFILE}"
