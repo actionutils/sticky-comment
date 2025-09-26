@@ -31,15 +31,20 @@ runs:
     - name: Post sticky comment
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ inputs.token }}
         COMMENT_KEY: ${{ inputs.key }}
         COMMENT_BODY: ${{ inputs.body }}
         COMMENT_NUMBER: ${{ inputs.number }}
         SKIP_NO_TOKEN: ${{ inputs.skip-no-token }}
         ACTION_PATH: ${{ github.action_path }}
+        INPUT_TOKEN: ${{ inputs.token }}
       run: |
         set -euo pipefail
         set -x  # Show executed commands for debugging
+
+        # Only set GITHUB_TOKEN if a token was provided and is not empty
+        if [ -n "${INPUT_TOKEN}" ]; then
+          export GITHUB_TOKEN="${INPUT_TOKEN}"
+        fi
 
         # Create temp file for comment body
         TMPFILE=$(mktemp)

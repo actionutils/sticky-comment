@@ -63,6 +63,7 @@ jobs:
           body: |
             This test runs without permissions.
             With skip-no-token enabled, it should succeed in dry-run mode.
+          token: ''  # Explicitly set to empty string
           skip-no-token: 'true'
 
       - name: Test without skip-no-token (should fail)
@@ -74,6 +75,7 @@ jobs:
           body: |
             This test runs without permissions and without skip-no-token.
             It should fail.
+          token: ''  # Explicitly set to empty string
           skip-no-token: 'false'
 
       - name: Verify previous step failed
