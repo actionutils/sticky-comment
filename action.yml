@@ -33,6 +33,7 @@ runs:
         COMMENT_NUMBER: ${{ inputs.number }}
         ACTION_PATH: ${{ github.action_path }}
       run: |
+        set -x  # Show executed commands for debugging
         # Run github-comment
         "${ACTION_PATH}/run-github-comment.sh" -- post \
           --pr "${COMMENT_NUMBER:-0}" \
