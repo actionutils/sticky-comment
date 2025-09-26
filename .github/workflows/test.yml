@@ -17,6 +17,7 @@ jobs:
         with:
           key: 'test-pr-comment'
           body: test comment (will be updated with next step)
+          skip-no-token: 'true'
 
       - name: Post sticky comment
         uses: ./
@@ -32,6 +33,7 @@ jobs:
             - Timestamp: ${{ github.event.pull_request.updated_at }}
 
             This comment should update on each push, not create duplicates.
+          skip-no-token: 'true'
 
       - name: Post another sticky comment with different key
         uses: ./
@@ -45,3 +47,39 @@ jobs:
             - Actor: ${{ github.actor }}
 
             Testing template escaping: {{ this should not be interpreted as a template }}
+          skip-no-token: 'true'
+
+  test-without-permissions:
+    runs-on: ubuntu-latest
+    # No permissions specified - tests behavior when no token is available
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test with skip-no-token enabled (should succeed in dry-run mode)
+        uses: ./
+        with:
+          key: 'test-no-perms'
+          body: |
+            This test runs without permissions.
+            With skip-no-token enabled, it should succeed in dry-run mode.
+          skip-no-token: 'true'
+
+      - name: Test without skip-no-token (should fail)
+        uses: ./
+        continue-on-error: true
+        id: should-fail
+        with:
+          key: 'test-no-perms-fail'
+          body: |
+            This test runs without permissions and without skip-no-token.
+            It should fail.
+          skip-no-token: 'false'
+
+      - name: Verify previous step failed
+        run: |
+          if [ "${{ steps.should-fail.outcome }}" != "failure" ]; then
+            echo "Error: Step should have failed but outcome was: ${{ steps.should-fail.outcome }}"
+            exit 1
+          fi
+          echo "✅ Step failed as expected"

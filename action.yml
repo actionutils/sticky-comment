@@ -20,6 +20,10 @@ inputs:
     description: 'GitHub token'
     required: false
     default: ${{ github.token }}
+  skip-no-token:
+    description: 'Works like dry-run if the GitHub Access Token is not set (instead of failing)'
+    required: false
+    default: 'false'
 
 runs:
   using: 'composite'
@@ -31,6 +35,7 @@ runs:
         COMMENT_KEY: ${{ inputs.key }}
         COMMENT_BODY: ${{ inputs.body }}
         COMMENT_NUMBER: ${{ inputs.number }}
+        SKIP_NO_TOKEN: ${{ inputs.skip-no-token }}
         ACTION_PATH: ${{ github.action_path }}
       run: |
         set -euo pipefail
@@ -45,10 +50,20 @@ runs:
         # Write comment body to temp file
         echo "${COMMENT_BODY}" > "${TMPFILE}"
 
-        # Run github-comment
-        "${ACTION_PATH}/run-github-comment.sh" -- post \
-          --pr "${COMMENT_NUMBER:-0}" \
-          -k "${COMMENT_KEY}" \
-          --update-condition "Comment.HasMeta && Comment.Meta.TemplateKey == \"${COMMENT_KEY}\"" \
-          --var-file "content:${TMPFILE}" \
+        # Build command arguments
+        ARGS=(
+          post
+          --pr "${COMMENT_NUMBER:-0}"
+          -k "${COMMENT_KEY}"
+          --update-condition "Comment.HasMeta && Comment.Meta.TemplateKey == \"${COMMENT_KEY}\""
+          --var-file "content:${TMPFILE}"
           --template '{{.Vars.content | AvoidHTMLEscape}}'
+        )
+
+        # Add skip-no-token flag if enabled
+        if [ "${SKIP_NO_TOKEN}" = "true" ]; then
+          ARGS+=(--skip-no-token)
+        fi
+
+        # Run github-comment
+        "${ACTION_PATH}/run-github-comment.sh" -- "${ARGS[@]}"
