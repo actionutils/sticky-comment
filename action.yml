@@ -45,7 +45,7 @@ runs:
           -k "${COMMENT_KEY}" \
           --update-condition "Comment.HasMeta && Comment.Meta.TemplateKey == \"${COMMENT_KEY}\"" \
           --var-file "content:${TMPFILE}" \
-          --template "{{ .Vars.content | AvoidHTMLEscape }}"
+          --template '{{ .Vars.content | AvoidHTMLEscape }}'
 
         # Clean up temp file
         rm -f "${TMPFILE}"
