@@ -40,13 +40,13 @@ runs:
         TMPFILE=$(mktemp)
         echo "${COMMENT_BODY}" > "${TMPFILE}"
 
-        # Run github-comment (avoid spaces in args to prevent wrapper splitting)
+        # Run github-comment
         "${ACTION_PATH}/run-github-comment.sh" -- post \
           --pr "${COMMENT_NUMBER:-0}" \
           -k "${COMMENT_KEY}" \
-          --update-condition "Comment.HasMeta&&Comment.Meta.TemplateKey==\"${COMMENT_KEY}\"" \
+          --update-condition "Comment.HasMeta && Comment.Meta.TemplateKey == \"${COMMENT_KEY}\"" \
           --var-file "content:${TMPFILE}" \
-          --template '{{.Vars.content|AvoidHTMLEscape}}'
+          --template '{{.Vars.content | AvoidHTMLEscape}}'
 
         # Clean up temp file
         rm -f "${TMPFILE}"

@@ -8,11 +8,9 @@ usage() {
   cat <<EOF
 $this: download and run ${NAME} from ${REPO}
 
-Usage: $this [-d] [tag] -- [binary arguments]
+Usage: $this [-d] -- [binary arguments]
   -d turns on debug logging
-   [tag] is a tag from
-   https://github.com/suzuki-shunsuke/github-comment/releases
-   If tag is missing, then the latest will be used.
+   This script is configured for v6.3.5 only.
 
    This script downloads and runs github-comment directly
    Pass arguments after --:
@@ -378,15 +376,22 @@ find_embedded_checksum() {
   echo "$EMBEDDED_CHECKSUMS" | grep -E "^${version}:${filename}:" | cut -d':' -f3
 }
 parse_args() {
-  SEPARATOR_FOUND=0
-  TOOL_ARGS=""
+  PARSE_CONSUMED=0
   while [ $# -gt 0 ]; do
     case "$1" in
-    -d) log_set_priority 10 ;;
-    -h | --help | \?) usage "$0" ;;
-    -x) set -x ;;
+    -d)
+      log_set_priority 10
+      PARSE_CONSUMED=$((PARSE_CONSUMED+1))
+      ;;
+    -h | --help | \?)
+      usage "$0"
+      ;;
+    -x)
+      set -x
+      PARSE_CONSUMED=$((PARSE_CONSUMED+1))
+      ;;
     --)
-      SEPARATOR_FOUND=1
+      PARSE_CONSUMED=$((PARSE_CONSUMED+1))
       shift
       break
       ;;
@@ -394,43 +399,20 @@ parse_args() {
       usage "$0"
       ;;
     *)
-      if [ $SEPARATOR_FOUND -eq 0 ]; then
-        # First non-flag argument is the tag/version
-        TAG="$1"
-      else
-        TOOL_ARGS="$1 $TOOL_ARGS"
-      fi
+      # Target version is fixed, stop parsing wrapper args
+      break
       ;;
     esac
     shift
   done
-
-  # Collect remaining arguments after --
-  while [ $# -gt 0 ]; do
-    TOOL_ARGS="$TOOL_ARGS $1"
-    shift
-  done
-  TAG="${TAG:-v6.3.5}"
+  TAG="v6.3.5"
 }
 tag_to_version() {
-  if [ "$TAG" = "latest" ]; then
-    log_info "checking GitHub for latest tag"
-    REALTAG=$(github_release "${REPO}" "${TAG}") && true
-    test -n "$REALTAG" || {
-      log_crit "Could not determine latest tag for ${REPO}"
-      exit 1
-    }
-  else
-    # Assume TAG is a valid tag/version string
-    REALTAG="$TAG"
-  fi
-  if test -z "$REALTAG"; then
-    log_crit "unable to find '${TAG}' - use 'latest' or see https://github.com/${REPO}/releases for details"
-    exit 1
-  fi
+  # Target version is set at generation time
+  REALTAG="v6.3.5"
   VERSION=${REALTAG#v} # Strip leading 'v'
-  TAG="$REALTAG"       # Use the resolved tag
-  log_info "Resolved version: ${VERSION} (tag: ${TAG})"
+  TAG="$REALTAG"
+  log_info "Running ${NAME} version ${VERSION}"
 }
 
 
@@ -525,9 +507,13 @@ execute() {
   fi
   # Make binary executable for runner script
   chmod +x "${BINARY_PATH}"
-  # Run the binary directly with provided arguments
-  log_info "Running ${BINARY_NAME}${TOOL_ARGS:+ with arguments:$TOOL_ARGS}"
-  exec "${BINARY_PATH}" $TOOL_ARGS
+  # Run the binary directly with provided arguments (already shifted)
+  if [ $# -gt 0 ]; then
+    log_info "Running ${BINARY_NAME} with $# argument(s)"
+  else
+    log_info "Running ${BINARY_NAME}"
+  fi
+  exec "${BINARY_PATH}" "$@"
 }
 
 # --- Configuration  ---
@@ -543,6 +529,8 @@ log_prefix() {
 log_set_priority 3
 
 parse_args "$@"
+# Now shift the consumed arguments for runner script
+shift "$PARSE_CONSUMED"
 
 # --- Determine target platform ---
 OS="${BINSTALLER_OS:-$(uname_os)}"
@@ -559,5 +547,5 @@ uname_arch_check "$ARCH"
 tag_to_version
 
 resolve_asset_filename
-
-execute
+# Pass remaining arguments to execute for runner script
+execute "$@"
