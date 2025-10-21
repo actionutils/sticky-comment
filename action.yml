@@ -46,7 +46,7 @@ runs:
         echo "${COMMENT_BODY}" > "${TMPFILE}"
 
         # Run github-comment
-        "${ACTION_PATH}/run-github-comment.sh" -- post \
+        "${ACTION_PATH}/run-github-comment.sh" post \
           --pr "${COMMENT_NUMBER:-0}" \
           -k "${COMMENT_KEY}" \
           --update-condition "Comment.HasMeta && Comment.Meta.TemplateKey == \"${COMMENT_KEY}\"" \

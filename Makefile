@@ -1,7 +1,7 @@
 # Makefile for setting up binstaller and github-comment
 
 # Variables
-BINSTALLER_VERSION := v0.10.1
+BINSTALLER_VERSION := v0.11.0
 BINSTALLER_URL := https://github.com/binary-install/binstaller/releases/download/$(BINSTALLER_VERSION)
 GITHUB_COMMENT_VERSION := v6.3.5
 BIN_DIR := ./bin
